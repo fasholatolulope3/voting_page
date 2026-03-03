@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { useCartStore } from '../stores/cart';
 
-defineProps({
+const props = defineProps({
   nomineeName: {
     type: String,
     required: true
@@ -9,18 +11,40 @@ defineProps({
   categoryName: {
     type: String,
     required: true
-  },
-  votes: {
-    type: Number,
-    default: 0
   }
 });
+
+const route = useRoute();
+const cartStore = useCartStore();
+const categoryId = computed(() => Number(route.params.id));
+
+const quantity = computed(() => 
+  cartStore.getQuantity(categoryId.value, props.nomineeName)
+);
+
+const increment = () => {
+  cartStore.addVote(categoryId.value, props.categoryName, props.nomineeName);
+};
+
+const decrement = () => {
+  cartStore.removeVote(categoryId.value, props.nomineeName);
+};
+
+// Compute total votes for display (dummy start + added votes)
+const displayVotes = computed(() => 0 + quantity.value); // In real app, this would be fetched from backend + current cart
 </script>
 
 <template>
   <div class="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-chocolate/5 group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
     <!-- Image/Poster Area with gradient overlay -->
     <div class="relative w-full aspect-[4/3] bg-chocolate bg-gradient-to-br from-[#8a3800] to-[#3d1c02] flex items-center justify-center p-6 overflow-hidden">
+      <!-- Checked State Icon -->
+      <div v-if="quantity > 0" class="absolute top-4 right-4 z-20 w-8 h-8 bg-chocolate-hover rounded-full flex items-center justify-center shadow-lg border-2 border-white text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+
       <!-- Placeholder decorative background elements -->
       <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-300 via-transparent to-transparent"></div>
       
@@ -35,9 +59,41 @@ defineProps({
     </div>
 
     <!-- Content Area -->
-    <div class="p-8 space-y-4">
-      <h2 class="text-2xl font-serif font-bold text-chocolate uppercase">{{ nomineeName }}</h2>
-      <p class="text-chocolate/50 text-sm font-medium">{{ votes }} votes</p>
+    <div class="p-8 space-y-6">
+      <div class="space-y-2">
+        <h2 class="text-2xl font-serif font-bold text-chocolate uppercase leading-tight">{{ nomineeName }}</h2>
+        <p class="text-chocolate/50 text-sm font-medium">{{ displayVotes }} vote{{ displayVotes !== 1 ? 's' : '' }}</p>
+      </div>
+      
+      <!-- Vote quantity selector matching the design -->
+      <div class="bg-chocolate/5 rounded-full flex items-center p-2 relative">
+        <button 
+          @click="decrement" 
+          :disabled="quantity === 0"
+          :class="[
+            'w-10 h-10 rounded-full flex items-center justify-center text-lg transition-colors bg-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed',
+            quantity > 0 ? 'text-chocolate hover:bg-cream' : 'text-chocolate/30'
+          ]"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+          </svg>
+        </button>
+        
+        <div class="flex-1 text-center font-bold text-chocolate text-lg">
+          {{ quantity }}
+        </div>
+        
+        <button 
+          @click="increment" 
+          class="w-10 h-10 rounded-full bg-white text-chocolate flex items-center justify-center hover:bg-cream transition-colors shadow-sm"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </template>
+

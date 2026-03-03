@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { categories } from '../stores/categories.js';
 import NomineeCard from '../components/NomineeCard.vue';
+import CartBanner from '../components/CartBanner.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -16,7 +17,7 @@ const goBack = () => {
 </script>
 
 <template>
-  <main class="max-w-7xl mx-auto px-6 py-12">
+  <main class="max-w-7xl mx-auto px-6 py-12 pb-32">
     <div v-if="category">
       <!-- Back Button & Header Container -->
       <div class="bg-white rounded-[2rem] p-8 md:p-12 mb-8 shadow-sm border border-chocolate/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -44,7 +45,7 @@ const goBack = () => {
       </div>
 
       <!-- Nominees Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
         <NomineeCard 
           v-for="(nominee, index) in category.nominees" 
           :key="index"
@@ -62,5 +63,8 @@ const goBack = () => {
       <h2 class="text-2xl font-bold text-chocolate mb-4">Category not found</h2>
       <button @click="goBack" class="bg-chocolate text-cream px-6 py-3 rounded-xl hover:bg-chocolate-hover transition-colors">Return Home</button>
     </div>
+
+    <!-- Sticky Cart Banner -->
+    <CartBanner />
   </main>
 </template>
