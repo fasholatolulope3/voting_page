@@ -117,12 +117,12 @@ onMounted(() => {
              class="bg-white rounded-[2rem] overflow-hidden border border-chocolate/5 shadow-sm hover:shadow-md transition-shadow">
           <div class="p-8">
             <div class="flex flex-col lg:flex-row gap-8">
-              <!-- Left Side: User Info & Votes -->
+              <!-- Left Side: Votes Summary & Actions -->
               <div class="flex-1 space-y-6">
+                <!-- Status & Time -->
                 <div class="flex justify-between items-start">
                   <div>
-                    <h3 class="text-xl font-bold text-chocolate leading-tight">{{ tx.fullName }}</h3>
-                    <p class="text-chocolate/50 text-sm">{{ tx.email }}</p>
+                    <h3 class="text-lg font-black text-chocolate uppercase tracking-wider">Transaction Record</h3>
                     <p class="text-[10px] text-chocolate/30 mt-1 uppercase tracking-widest font-black">{{ formatDate(tx.timestamp) }}</p>
                   </div>
                   <div :class="[
@@ -135,10 +135,11 @@ onMounted(() => {
                   </div>
                 </div>
 
+                <!-- Votes Detail -->
                 <div class="bg-cream/20 rounded-2xl p-6 border border-chocolate/5">
                   <h4 class="text-xs font-black text-chocolate uppercase tracking-widest mb-4 border-b border-chocolate/10 pb-2 flex items-center justify-between">
                     <span>Votes Summary</span>
-                    <span class="text-[10px] text-chocolate/30 font-medium">ID: {{ tx.id }}</span>
+                    <span class="text-[10px] text-chocolate/30 font-medium lowercase">id: {{ tx.id }}</span>
                   </h4>
                   <div class="space-y-3">
                     <div v-for="(vote, idx) in tx.votes" :key="idx" class="flex justify-between items-center text-sm">
@@ -155,6 +156,7 @@ onMounted(() => {
                   </div>
                 </div>
 
+                <!-- Actions -->
                 <div v-if="tx.status === 'pending'" class="flex flex-col sm:flex-row gap-4 pt-2">
                   <button @click="approve(tx.id)" class="flex-1 bg-[#09A588] hover:bg-[#07856d] text-white font-bold py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 active:scale-95">
                     <svg class="w-5 h-5 bg-white/20 rounded-full p-1" fill="currentColor" viewBox="0 0 20 20">
@@ -168,23 +170,11 @@ onMounted(() => {
                     </svg>
                   </button>
                 </div>
-                <div v-else-if="tx.status === 'approved'" class="space-y-4 pt-2">
-                  <div class="text-center p-4 rounded-xl bg-green-50 text-green-700 font-bold border border-green-200 flex items-center justify-center gap-2 shadow-inner">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                    Approved & Processed
-                  </div>
-                  <a 
-                    :href="`https://mail.google.com/mail/?view=cm&fs=1&to=${tx.email}&su=Votes Confirmed - Pharmacy Department Award Day&body=Hello ${tx.fullName},%0D%0A%0D%0AYour payment for the Pharmacy Department Award Day has been confirmed and your votes have been successfully counted. Thank you for participating!%0D%0A%0D%0ABest regards,%0D%0AAwards Admin`"
-                    target="_blank"
-                    class="w-full flex items-center justify-center gap-2 py-4 bg-white border-2 border-[#09A588]/20 rounded-xl text-chocolate font-bold hover:bg-[#09A588]/5 transition-all active:scale-95 shadow-sm"
-                  >
-                    <svg class="w-5 h-5 text-[#09A588]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    Send Confirmation via Gmail
-                  </a>
+                <div v-else-if="tx.status === 'approved'" class="text-center p-4 rounded-xl bg-green-50 text-green-700 font-bold border border-green-200 flex items-center justify-center gap-2 shadow-inner">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                  Approved & Processed
                 </div>
                 <div v-else class="text-center p-4 rounded-xl bg-red-50 text-red-500 font-bold border border-red-200 shadow-inner italic">
                   Transaction Rejected

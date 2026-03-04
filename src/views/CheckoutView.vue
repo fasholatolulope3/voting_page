@@ -10,8 +10,6 @@ const adminStore = useAdminStore();
 const deadlineStore = useDeadlineStore();
 const router = useRouter();
 
-const fullName = ref('');
-const email = ref('');
 const receiptFile = ref(null);
 const receiptPreview = ref(null);
 const isProcessing = ref(false);
@@ -70,44 +68,23 @@ const handleFileChange = (e) => {
 
 
 const handlePayment = async () => {
-  if (!fullName.value || !email.value || !receiptFile.value) {
-    alert('Please fill in all fields and upload your payment receipt.');
+  if (!receiptFile.value) {
+    alert('Please upload your payment receipt.');
     return;
   }
 
+
   isProcessing.value = true;
   
-  // Format votes for the email message
-  const votesSummary = cartStore.votes.map(v => `${v.nomineeName} (${v.quantity} votes in ${v.categoryName})`).join(', ');
-
-  // Create transaction object for local admin store
+  // Create transaction object for Firestore
   const transactionData = {
-    fullName: fullName.value,
-    email: email.value,
     receiptImage: receiptPreview.value,
     votes: JSON.parse(JSON.stringify(cartStore.votes)),
     totalCost: cartStore.totalCost
   };
 
   try {
-    // Submit to Web3Forms for email notification
-    const response = await fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        access_key: 'a4fed03b-0c17-42e4-8f1f-ceca7ccc4a6c',
-        subject: `New Award Votes Submission from ${fullName.value}`,
-        from_name: 'Pharmacy Awards Bot',
-        name: fullName.value,
-        email: email.value,
-        message: `A new vote submission has been received.\n\nTotal Paid: ₦${cartStore.totalCost.toLocaleString()}\nVotes: ${votesSummary}\n\nNote: The payment receipt can be viewed/confirmed in the Admin Dashboard.`,
-      })
-    });
 
-    const result = await response.json();
     
     // Submit to Firestore with a timeout to prevent hanging "rolling" spinner
     console.log('Attempting to save to Firestore...');
@@ -119,16 +96,9 @@ const handlePayment = async () => {
     await Promise.race([dbPromise, timeoutPromise]);
     console.log('Firestore save successful');
 
-    if (result.success) {
-      alert('Submission successful! Your votes are now pending admin confirmation. They will count once the admin confirms your payment.');
-      cartStore.$patch({ votes: [] });
-      router.push('/');
-    } else {
-      console.error('Web3Forms Error:', result);
-      alert('There was an issue sending the notification, but your votes have been recorded for admin review.');
-      cartStore.$patch({ votes: [] });
-      router.push('/');
-    }
+    alert('Submission successful! Your votes are now pending admin confirmation. They will count once the admin confirms your payment.');
+    cartStore.$patch({ votes: [] });
+    router.push('/');
   } catch (error) {
     console.error('Submission Error:', error);
     
@@ -241,17 +211,8 @@ onMounted(() => {
           
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-chocolate/70 mb-1">Full Name</label>
-              <input v-model="fullName" type="text" placeholder="Enter your full name" class="w-full px-4 py-3 rounded-xl border border-chocolate/10 focus:ring-[#09A588] focus:border-[#09A588] outline-none transition-all placeholder:text-chocolate/30" />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-chocolate/70 mb-1">Email Address</label>
-              <input v-model="email" type="email" placeholder="Enter your email" class="w-full px-4 py-3 rounded-xl border border-chocolate/10 focus:ring-[#09A588] focus:border-[#09A588] outline-none transition-all placeholder:text-chocolate/30" />
-            </div>
-            
-            <div>
               <label class="block text-sm font-medium text-chocolate/70 mb-1">Upload Transfer Receipt</label>
+
               <div class="relative group">
                 <input 
                   type="file" 
