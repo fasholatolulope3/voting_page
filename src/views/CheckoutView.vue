@@ -18,15 +18,56 @@ const isProcessing = ref(false);
 
 const handleFileChange = (e) => {
   const file = e.target.files[0];
-  if (file) {
-    receiptFile.value = file;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      receiptPreview.value = event.target.result;
+  if (!file) return;
+
+  receiptFile.value = file;
+  const reader = new FileReader();
+  
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      // Create canvas for compression
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      // Max dimensions to keep it under localStorage limit
+      const MAX_WIDTH = 1024;
+      const MAX_HEIGHT = 1024;
+
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width *= MAX_HEIGHT / height;
+          height = MAX_HEIGHT;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Compress to JPEG with 0.7 quality
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      receiptPreview.value = compressedDataUrl;
+      
+      console.log('Original size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+      console.log('Compressed size:', (compressedDataUrl.length * 3/4 / 1024 / 1024).toFixed(2), 'MB');
     };
-    reader.readAsDataURL(file);
-  }
+    img.src = event.target.result;
+  };
+  
+  reader.readAsDataURL(file);
 };
+
+
+
 
 const handlePayment = async () => {
   if (!fullName.value || !email.value || !receiptFile.value) {
@@ -68,8 +109,9 @@ const handlePayment = async () => {
 
     const result = await response.json();
     
-    // Submit to local admin store (simulated backend)
-    adminStore.submitTransaction(transactionData);
+    // Submit to Firestore
+    await adminStore.submitTransaction(transactionData);
+
 
     if (result.success) {
       alert('Submission successful! Your votes are now pending admin confirmation. They will count once the admin confirms your payment.');
@@ -89,8 +131,8 @@ const handlePayment = async () => {
     }
   } catch (error) {
     console.error('Submission Error:', error);
-    // Still record in local store even if network notification fails
-    adminStore.submitTransaction(transactionData);
+    // Still record in Firestore even if network notification fails
+    await adminStore.submitTransaction(transactionData);
     alert('Votes submitted! (Notification failed, but admin can still see your record).');
     cartStore.$patch({ votes: [] });
     router.push('/');

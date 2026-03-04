@@ -19,6 +19,14 @@ export const categories = ref([
 ]);
 
 export const applyApprovedVotes = (approvedVotesArray) => {
+  // Reset all current votes to 0 first to prevent double-counting during real-time updates
+  categories.value.forEach(category => {
+    category.nominees.forEach(nominee => {
+      nominee.currentVotes = 0;
+    });
+  });
+
+  // Apply the approved votes
   approvedVotesArray.forEach(vote => {
     const category = categories.value.find(c => c.id === vote.categoryId);
     if (category) {
@@ -29,3 +37,4 @@ export const applyApprovedVotes = (approvedVotesArray) => {
     }
   });
 };
+

@@ -20,17 +20,19 @@ const login = () => {
   }
 };
 
-const approve = (id) => {
+const approve = async (id) => {
   if (confirm('Are you sure you want to approve these votes?')) {
-    adminStore.approveTransaction(id);
+    await adminStore.approveTransaction(id);
   }
 };
 
-const reject = (id) => {
+
+const reject = async (id) => {
   if (confirm('Are you sure you want to reject these votes?')) {
-    adminStore.rejectTransaction(id);
+    await adminStore.rejectTransaction(id);
   }
 };
+
 
 const goBack = () => {
   router.push('/');

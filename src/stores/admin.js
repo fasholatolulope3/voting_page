@@ -1,44 +1,74 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { applyApprovedVotes } from './categories';
+import { defineStore } from "pinia";
+import { ref, onMounted } from "vue";
+import { applyApprovedVotes } from "./categories";
+import { db } from "../firebase";
+import { 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  doc, 
+  onSnapshot, 
+  query, 
+  orderBy 
+} from "firebase/firestore";
 
-export const useAdminStore = defineStore('admin', () => {
-  // Load initial data from localStorage if available
-  const savedTransactions = localStorage.getItem('pending_transactions');
-  const pendingTransactions = ref(savedTransactions ? JSON.parse(savedTransactions) : []);
+export const useAdminStore = defineStore("admin", () => {
+  const pendingTransactions = ref([]);
 
-  // Helper to save to local storage
-  const syncStorage = () => {
-    localStorage.setItem('pending_transactions', JSON.stringify(pendingTransactions.value));
+  // Initialize real-time listener
+  const initListener = () => {
+    const q = query(collection(db, "transactions"), orderBy("timestamp", "desc"));
+    onSnapshot(q, (snapshot) => {
+      pendingTransactions.value = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Update totals in categories store based on approved transactions
+      const approved = pendingTransactions.value.filter(t => t.status === 'approved');
+      // Reset votes first to avoid double counting if needed, or handle in applyApprovedVotes
+      // For simplicity, we'll re-apply all approved votes
+      // Note: categories.js needs to handle this reset/re-apply
+      applyApprovedVotes(approved.flatMap(t => t.votes));
+    });
   };
 
-  const submitTransaction = (transactionData) => {
-    const newTransaction = {
-      id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-      timestamp: new Date().toISOString(),
-      status: 'pending',
-      ...transactionData
-    };
-    
-    pendingTransactions.value.unshift(newTransaction);
-    syncStorage();
-    return newTransaction.id;
-  };
+  // Call initListener immediately
+  initListener();
 
-  const approveTransaction = (id) => {
-    const transaction = pendingTransactions.value.find(t => t.id === id);
-    if (transaction && transaction.status === 'pending') {
-      transaction.status = 'approved';
-      applyApprovedVotes(transaction.votes);
-      syncStorage();
+  const submitTransaction = async (transactionData) => {
+    try {
+      const docRef = await addDoc(collection(db, "transactions"), {
+        timestamp: new Date().toISOString(),
+        status: 'pending',
+        ...transactionData
+      });
+      return docRef.id;
+    } catch (error) {
+      console.error("Error adding transaction: ", error);
+      throw error;
     }
   };
 
-  const rejectTransaction = (id) => {
-    const transaction = pendingTransactions.value.find(t => t.id === id);
-    if (transaction && transaction.status === 'pending') {
-      transaction.status = 'rejected';
-      syncStorage();
+  const approveTransaction = async (id) => {
+    try {
+      const docRef = doc(db, "transactions", id);
+      await updateDoc(docRef, {
+        status: 'approved'
+      });
+    } catch (error) {
+      console.error("Error approving transaction: ", error);
+    }
+  };
+
+  const rejectTransaction = async (id) => {
+    try {
+      const docRef = doc(db, "transactions", id);
+      await updateDoc(docRef, {
+        status: 'rejected'
+      });
+    } catch (error) {
+      console.error("Error rejecting transaction: ", error);
     }
   };
 
@@ -46,6 +76,7 @@ export const useAdminStore = defineStore('admin', () => {
     pendingTransactions,
     submitTransaction,
     approveTransaction,
-    rejectTransaction
+    rejectTransaction,
   };
 });
+
