@@ -109,37 +109,47 @@ const handlePayment = async () => {
 
     const result = await response.json();
     
-    // Submit to Firestore
-    await adminStore.submitTransaction(transactionData);
+    // Submit to Firestore with a timeout to prevent hanging "rolling" spinner
+    console.log('Attempting to save to Firestore...');
+    const dbPromise = adminStore.submitTransaction(transactionData);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database timeout - check your Firebase connection or Security Rules')), 10000)
+    );
 
+    await Promise.race([dbPromise, timeoutPromise]);
+    console.log('Firestore save successful');
 
     if (result.success) {
       alert('Submission successful! Your votes are now pending admin confirmation. They will count once the admin confirms your payment.');
-      
-      // Clear the cart
       cartStore.$patch({ votes: [] });
-      
-      // Redirect to home
       router.push('/');
     } else {
       console.error('Web3Forms Error:', result);
       alert('There was an issue sending the notification, but your votes have been recorded for admin review.');
-      
-      // Still proceed since local store has it
       cartStore.$patch({ votes: [] });
       router.push('/');
     }
   } catch (error) {
     console.error('Submission Error:', error);
-    // Still record in Firestore even if network notification fails
-    await adminStore.submitTransaction(transactionData);
-    alert('Votes submitted! (Notification failed, but admin can still see your record).');
-    cartStore.$patch({ votes: [] });
-    router.push('/');
+    
+    if (error.message.includes('Database timeout')) {
+       alert('The submission is taking too long. Please check your internet connection and ensure your Firebase Firestore Security Rules are set to "Test Mode" or allow public writes.');
+    } else {
+       // Try one last time or just notify
+       try {
+         await adminStore.submitTransaction(transactionData);
+         alert('Votes submitted finally! (There were initial network delays).');
+         cartStore.$patch({ votes: [] });
+         router.push('/');
+       } catch (finalError) {
+         alert('Failed to submit. Error: ' + error.message);
+       }
+    }
   } finally {
     isProcessing.value = false;
   }
 };
+
 
 const goBack = () => {
   router.back();
