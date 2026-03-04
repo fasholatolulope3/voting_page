@@ -10,7 +10,7 @@
       </span>
       
       <h1 class="text-4xl md:text-6xl font-serif font-bold leading-tight">
-        Community Health Departmental Awards
+        Pharmacy Department Award Day
       </h1>
       
       <p class="text-lg md:text-xl text-cream/80 max-w-2xl font-light leading-relaxed">

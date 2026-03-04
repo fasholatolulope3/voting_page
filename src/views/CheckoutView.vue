@@ -59,7 +59,7 @@ const handlePayment = async () => {
       body: JSON.stringify({
         access_key: 'a4fed03b-0c17-42e4-8f1f-ceca7ccc4a6c',
         subject: `New Award Votes Submission from ${fullName.value}`,
-        from_name: 'Departmental Awards Bot',
+        from_name: 'Pharmacy Awards Bot',
         name: fullName.value,
         email: email.value,
         message: `A new vote submission has been received.\n\nTotal Paid: ₦${cartStore.totalCost.toLocaleString()}\nVotes: ${votesSummary}\n\nNote: The payment receipt can be viewed/confirmed in the Admin Dashboard.`,

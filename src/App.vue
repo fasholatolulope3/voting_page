@@ -10,7 +10,7 @@ import CountdownTimer from './components/CountdownTimer.vue';
         <div class="w-10 h-10 bg-chocolate rounded-lg flex items-center justify-center text-cream font-serif font-bold text-xl">
           DA
         </div>
-        <span class="font-serif font-bold text-xl hidden sm:inline-block text-chocolate">Departmental Awards</span>
+        <span class="font-serif font-bold text-xl hidden sm:inline-block text-chocolate">Pharmacy Department Award Day</span>
       </router-link>
       <CountdownTimer />
     </nav>
@@ -25,8 +25,8 @@ import CountdownTimer from './components/CountdownTimer.vue';
 
     <footer class="bg-chocolate-hover text-cream/50 py-12 px-6 border-t border-white/5 mt-auto">
       <div class="max-w-7xl mx-auto text-center space-y-4">
-        <p class="text-sm tracking-widest uppercase">Departmental Awards &copy; 2026</p>
-        <p class="text-xs">Community Health Department</p>
+        <p class="text-sm tracking-widest uppercase">Pharmacy Department Award Day &copy; 2026</p>
+        <p class="text-xs">Pharmacy Department</p>
       </div>
     </footer>
   </div>

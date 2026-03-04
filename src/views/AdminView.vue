@@ -174,7 +174,7 @@ onMounted(() => {
                     Approved & Processed
                   </div>
                   <a 
-                    :href="`https://mail.google.com/mail/?view=cm&fs=1&to=${tx.email}&su=Votes Confirmed - Departmental Awards&body=Hello ${tx.fullName},%0D%0A%0D%0AYour payment for the departmental awards has been confirmed and your votes have been successfully counted. Thank you for participating!%0D%0A%0D%0ABest regards,%0D%0AAwards Admin`"
+                    :href="`https://mail.google.com/mail/?view=cm&fs=1&to=${tx.email}&su=Votes Confirmed - Pharmacy Department Award Day&body=Hello ${tx.fullName},%0D%0A%0D%0AYour payment for the Pharmacy Department Award Day has been confirmed and your votes have been successfully counted. Thank you for participating!%0D%0A%0D%0ABest regards,%0D%0AAwards Admin`"
                     target="_blank"
                     class="w-full flex items-center justify-center gap-2 py-4 bg-white border-2 border-[#09A588]/20 rounded-xl text-chocolate font-bold hover:bg-[#09A588]/5 transition-all active:scale-95 shadow-sm"
                   >

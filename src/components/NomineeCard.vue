@@ -66,9 +66,9 @@ const displayVotes = computed(() => {
       <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-300 via-transparent to-transparent"></div>
       
       <div class="relative z-10 text-center space-y-2 w-full border border-white/20 p-6 flex flex-col items-center justify-center h-full">
-        <p class="text-white/80 text-xs font-semibold tracking-[0.2em] uppercase">Community Health</p>
+        <p class="text-white/80 text-xs font-semibold tracking-[0.2em] uppercase">Pharmacy Department</p>
         <h3 class="text-white text-3xl font-serif font-bold uppercase leading-none tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500 pb-1">
-          Departmental<br/>Award
+          Award<br/>Day
         </h3>
         <div class="h-px w-2/3 bg-gradient-to-r from-transparent via-white/50 to-transparent my-2"></div>
         <p class="text-red-400 font-bold text-sm tracking-widest uppercase">Tagged: <span class="text-white/90 font-normal tracking-wide">Resilience Reimagined</span></p>
