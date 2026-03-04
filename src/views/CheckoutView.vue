@@ -6,59 +6,22 @@ import { useRouter } from 'vue-router';
 const cartStore = useCartStore();
 const router = useRouter();
 
-const email = ref('');
-const fullName = ref('');
 const isProcessing = ref(false);
 
-// We use a placeholder for the Paystack public key.
-// The user should replace this before going to production.
-const paystackPublicKey = 'pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-
 const handlePayment = () => {
-  if (!email.value) {
-    alert("Please enter your email address.");
-    return;
-  }
-
   isProcessing.value = true;
-
-  const handler = PaystackPop.setup({
-    key: paystackPublicKey, 
-    email: email.value,
-    amount: cartStore.totalCost * 100, // Paystack amount is in kobo, so * 100
-    currency: 'NGN',
-    metadata: {
-      custom_fields: [
-        {
-          display_name: "Full Name",
-          variable_name: "full_name",
-          value: fullName.value
-        },
-        {
-          display_name: "Votes Summary",
-          variable_name: "votes_summary",
-          value: JSON.stringify(cartStore.votes)
-        }
-      ]
-    },
-    callback: function(response){
-      isProcessing.value = false;
-      // Payment successful
-      alert(`Payment complete! Reference: ${response.reference}`);
-      
-      // Clear the cart
-      cartStore.$patch({ votes: [] });
-      
-      // Redirect to home
-      router.push('/');
-    },
-    onClose: function(){
-      isProcessing.value = false;
-      alert('Transaction was not completed, window closed.');
-    }
-  });
-
-  handler.openIframe();
+  
+  // Simulate processing time for better UX
+  setTimeout(() => {
+    isProcessing.value = false;
+    alert('Payment confirmed! Thank you for your votes.');
+    
+    // Clear the cart
+    cartStore.$patch({ votes: [] });
+    
+    // Redirect to home
+    router.push('/');
+  }, 1500);
 };
 
 const goBack = () => {
@@ -112,50 +75,48 @@ onMounted(() => {
         </div>
       </section>
 
-      <!-- Paystack Payment Form -->
+      <!-- Bank Transfer Payment Instructions -->
       <section class="bg-cream-dark p-6 rounded-2xl">
-        <h2 class="text-lg font-bold text-chocolate mb-4">Payment Details</h2>
-        <form @submit.prevent="handlePayment" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-chocolate/80 mb-1">Email Address *</label>
-            <input 
-              v-model="email" 
-              type="email" 
-              required 
-              placeholder="voter@example.com"
-              class="w-full px-4 py-3 bg-white border border-chocolate/10 rounded-xl focus:ring-2 focus:ring-chocolate/20 focus:outline-none transition-all placeholder:text-chocolate/30"
-            />
+        <h2 class="text-xl font-bold text-chocolate mb-4">Payment Instructions</h2>
+        <p class="text-chocolate/80 mb-6">
+          To complete your voting, please make a transfer of <span class="font-bold">₦{{ cartStore.totalCost.toLocaleString() }}</span> to the bank account below.
+        </p>
+        
+        <div class="bg-white border border-chocolate/10 rounded-xl p-6 mb-6">
+          <div class="space-y-4">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+              <span class="text-sm font-medium text-chocolate/50 uppercase tracking-wider">Bank Name</span>
+              <span class="text-lg font-bold text-chocolate">OPAY</span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+              <span class="text-sm font-medium text-chocolate/50 uppercase tracking-wider">Account Number</span>
+              <span class="text-xl font-black text-[#09A588]">9043036911</span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+              <span class="text-sm font-medium text-chocolate/50 uppercase tracking-wider">Account Name</span>
+              <span class="text-md font-bold text-chocolate text-right">FASHOLA TOLULOPE OLADAPO</span>
+            </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-chocolate/80 mb-1">Full Name (Optional)</label>
-            <input 
-              v-model="fullName" 
-              type="text" 
-              placeholder="John Doe"
-              class="w-full px-4 py-3 bg-white border border-chocolate/10 rounded-xl focus:ring-2 focus:ring-chocolate/20 focus:outline-none transition-all placeholder:text-chocolate/30"
-            />
-          </div>
+        </div>
 
+        <form @submit.prevent="handlePayment" class="space-y-4">
           <button 
             type="submit" 
             :disabled="isProcessing"
-            class="w-full mt-4 bg-[#09A588] hover:bg-[#07856d] text-white font-bold py-4 px-8 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            class="w-full bg-[#09A588] hover:bg-[#07856d] text-white font-bold py-4 px-8 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             <svg v-if="!isProcessing" class="w-5 h-5 bg-white rounded-full text-[#09A588] p-[2px]" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
             </svg>
             <svg v-else class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ isProcessing ? 'Processing...' : 'Pay with Paystack' }}
+            {{ isProcessing ? 'Confirming...' : 'I Have Made The Transfer' }}
           </button>
           
-          <p class="text-xs text-center text-chocolate/50 mt-4 flex items-center justify-center gap-1">
-            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-            </svg>
-            Secured by Paystack
+          <p class="text-xs text-center text-chocolate/50 mt-4">
+            By clicking this button, you confirm that you have made the transfer to the above account.
           </p>
         </form>
       </section>
