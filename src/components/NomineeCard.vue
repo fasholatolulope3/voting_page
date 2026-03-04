@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCartStore } from '../stores/cart';
+import { categories } from '../stores/categories';
 
 const props = defineProps({
   nomineeName: {
@@ -30,8 +31,18 @@ const decrement = () => {
   cartStore.removeVote(categoryId.value, props.nomineeName);
 };
 
-// Compute total votes for display (dummy start + added votes)
-const displayVotes = computed(() => 0 + quantity.value); // In real app, this would be fetched from backend + current cart
+// Fetch current approved votes from the categories store
+const currentApprovedVotes = computed(() => {
+  const category = categories.value.find(c => c.id === categoryId.value);
+  if (category) {
+    const nominee = category.nominees.find(n => n.name === props.nomineeName);
+    return nominee ? nominee.currentVotes : 0;
+  }
+  return 0;
+});
+
+// Compute total votes for display (approved votes)
+const displayVotes = computed(() => currentApprovedVotes.value);
 </script>
 
 <template>

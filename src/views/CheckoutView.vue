@@ -1,27 +1,100 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useCartStore } from '../stores/cart';
+import { useAdminStore } from '../stores/admin';
 import { useRouter } from 'vue-router';
 
 const cartStore = useCartStore();
+const adminStore = useAdminStore();
 const router = useRouter();
 
+const fullName = ref('');
+const email = ref('');
+const receiptFile = ref(null);
+const receiptPreview = ref(null);
 const isProcessing = ref(false);
 
-const handlePayment = () => {
+const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    receiptFile.value = file;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      receiptPreview.value = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+const handlePayment = async () => {
+  if (!fullName.value || !email.value || !receiptFile.value) {
+    alert('Please fill in all fields and upload your payment receipt.');
+    return;
+  }
+
   isProcessing.value = true;
   
-  // Simulate processing time for better UX
-  setTimeout(() => {
-    isProcessing.value = false;
-    alert('Payment confirmed! Thank you for your votes.');
+  // Format votes for the email message
+  const votesSummary = cartStore.votes.map(v => `${v.nomineeName} (${v.quantity} votes in ${v.categoryName})`).join(', ');
+
+  // Create transaction object for local admin store
+  const transactionData = {
+    fullName: fullName.value,
+    email: email.value,
+    receiptImage: receiptPreview.value,
+    votes: JSON.parse(JSON.stringify(cartStore.votes)),
+    totalCost: cartStore.totalCost
+  };
+
+  try {
+    // Submit to Web3Forms for email notification
+    const response = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        access_key: 'a4fed03b-0c17-42e4-8f1f-ceca7ccc4a6c',
+        subject: `New Award Votes Submission from ${fullName.value}`,
+        from_name: 'Departmental Awards Bot',
+        name: fullName.value,
+        email: email.value,
+        message: `A new vote submission has been received.\n\nTotal Paid: ₦${cartStore.totalCost.toLocaleString()}\nVotes: ${votesSummary}\n\nNote: The payment receipt can be viewed/confirmed in the Admin Dashboard.`,
+      })
+    });
+
+    const result = await response.json();
     
-    // Clear the cart
+    // Submit to local admin store (simulated backend)
+    adminStore.submitTransaction(transactionData);
+
+    if (result.success) {
+      alert('Submission successful! Your votes are now pending admin confirmation. They will count once the admin confirms your payment.');
+      
+      // Clear the cart
+      cartStore.$patch({ votes: [] });
+      
+      // Redirect to home
+      router.push('/');
+    } else {
+      console.error('Web3Forms Error:', result);
+      alert('There was an issue sending the notification, but your votes have been recorded for admin review.');
+      
+      // Still proceed since local store has it
+      cartStore.$patch({ votes: [] });
+      router.push('/');
+    }
+  } catch (error) {
+    console.error('Submission Error:', error);
+    // Still record in local store even if network notification fails
+    adminStore.submitTransaction(transactionData);
+    alert('Votes submitted! (Notification failed, but admin can still see your record).');
     cartStore.$patch({ votes: [] });
-    
-    // Redirect to home
     router.push('/');
-  }, 1500);
+  } finally {
+    isProcessing.value = false;
+  }
 };
 
 const goBack = () => {
@@ -99,6 +172,55 @@ onMounted(() => {
           </div>
         </div>
 
+        <div class="bg-white rounded-xl p-6 border border-chocolate/10 space-y-6 mb-6">
+          <h3 class="font-bold text-chocolate flex items-center gap-2">
+            <span class="bg-[#09A588] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+            Submit Proof of Payment
+          </h3>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-chocolate/70 mb-1">Full Name</label>
+              <input v-model="fullName" type="text" placeholder="Enter your full name" class="w-full px-4 py-3 rounded-xl border border-chocolate/10 focus:ring-[#09A588] focus:border-[#09A588] outline-none transition-all placeholder:text-chocolate/30" />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-chocolate/70 mb-1">Email Address</label>
+              <input v-model="email" type="email" placeholder="Enter your email" class="w-full px-4 py-3 rounded-xl border border-chocolate/10 focus:ring-[#09A588] focus:border-[#09A588] outline-none transition-all placeholder:text-chocolate/30" />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-chocolate/70 mb-1">Upload Transfer Receipt</label>
+              <div class="relative group">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  @change="handleFileChange" 
+                  class="hidden" 
+                  id="receipt-upload"
+                />
+                <label 
+                  for="receipt-upload" 
+                  class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-chocolate/20 rounded-xl cursor-pointer hover:bg-chocolate/5 hover:border-[#09A588] transition-all bg-chocolate/5 overflow-hidden"
+                >
+                  <template v-if="!receiptPreview">
+                    <svg class="w-8 h-8 text-chocolate/30 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span class="text-sm text-chocolate/50 font-medium">Click to upload receipt image</span>
+                  </template>
+                  <template v-else>
+                    <img :src="receiptPreview" class="absolute inset-0 w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span class="text-white text-xs font-bold uppercase tracking-widest">Change Image</span>
+                    </div>
+                  </template>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <form @submit.prevent="handlePayment" class="space-y-4">
           <button 
             type="submit" 
@@ -112,11 +234,11 @@ onMounted(() => {
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ isProcessing ? 'Confirming...' : 'I Have Made The Transfer' }}
+            {{ isProcessing ? 'Submitting...' : 'Submit Proof of Payment' }}
           </button>
           
-          <p class="text-xs text-center text-chocolate/50 mt-4">
-            By clicking this button, you confirm that you have made the transfer to the above account.
+          <p class="text-xs text-center text-chocolate/50 mt-4 leading-relaxed">
+            By clicking this button, you confirm that you have made the transfer to the above account and uploaded the correct receipt. Votes will count after admin confirmation.
           </p>
         </form>
       </section>

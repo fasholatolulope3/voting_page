@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import CategoryView from '../views/CategoryView.vue';
 import CheckoutView from '../views/CheckoutView.vue';
+import AdminView from '../views/AdminView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,6 +22,11 @@ const router = createRouter({
       path: '/checkout',
       name: 'checkout',
       component: CheckoutView
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: AdminView
     }
   ],
   scrollBehavior(to, from, savedPosition) {
