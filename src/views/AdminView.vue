@@ -174,13 +174,14 @@ onMounted(() => {
                     Approved & Processed
                   </div>
                   <a 
-                    :href="`mailto:${tx.email}?subject=Votes Confirmed - Departmental Awards&body=Hello ${tx.fullName},%0D%0A%0D%0AYour payment for the departmental awards has been confirmed and your votes have been successfully counted. Thank you for participating!%0D%0A%0D%0ABest regards,%0D%0AAwards Admin`"
+                    :href="`https://mail.google.com/mail/?view=cm&fs=1&to=${tx.email}&su=Votes Confirmed - Departmental Awards&body=Hello ${tx.fullName},%0D%0A%0D%0AYour payment for the departmental awards has been confirmed and your votes have been successfully counted. Thank you for participating!%0D%0A%0D%0ABest regards,%0D%0AAwards Admin`"
+                    target="_blank"
                     class="w-full flex items-center justify-center gap-2 py-4 bg-white border-2 border-[#09A588]/20 rounded-xl text-chocolate font-bold hover:bg-[#09A588]/5 transition-all active:scale-95 shadow-sm"
                   >
                     <svg class="w-5 h-5 text-[#09A588]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    Send Confirmation Email
+                    Send Confirmation via Gmail
                   </a>
                 </div>
                 <div v-else class="text-center p-4 rounded-xl bg-red-50 text-red-500 font-bold border border-red-200 shadow-inner italic">
