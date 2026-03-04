@@ -15,8 +15,11 @@ const props = defineProps({
   }
 });
 
+import { useAdminStore } from '../stores/admin';
+
 const route = useRoute();
 const cartStore = useCartStore();
+const adminStore = useAdminStore();
 const categoryId = computed(() => Number(route.params.id));
 
 const quantity = computed(() => 
@@ -31,18 +34,19 @@ const decrement = () => {
   cartStore.removeVote(categoryId.value, props.nomineeName);
 };
 
-// Fetch current approved votes from the categories store
-const currentApprovedVotes = computed(() => {
-  const category = categories.value.find(c => c.id === categoryId.value);
-  if (category) {
-    const nominee = category.nominees.find(n => n.name === props.nomineeName);
-    return nominee ? nominee.currentVotes : 0;
-  }
-  return 0;
+// Calculate total approved votes from the admin store (persisted in localStorage)
+const displayVotes = computed(() => {
+  return adminStore.pendingTransactions
+    .filter(tx => tx.status === 'approved')
+    .reduce((total, tx) => {
+      // Find votes for this specific nominee in this category
+      const nomineeVotes = tx.votes.find(v => 
+        v.nomineeName === props.nomineeName && 
+        v.categoryId === categoryId.value
+      );
+      return total + (nomineeVotes ? nomineeVotes.quantity : 0);
+    }, 0);
 });
-
-// Compute total votes for display (approved votes)
-const displayVotes = computed(() => currentApprovedVotes.value);
 </script>
 
 <template>

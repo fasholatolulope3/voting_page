@@ -49,7 +49,7 @@ const goBack = () => {
         <NomineeCard 
           v-for="(nominee, index) in category.nominees" 
           :key="index"
-          :nomineeName="nominee"
+          :nomineeName="nominee.name"
           :categoryName="category.name"
         />
       </div>
