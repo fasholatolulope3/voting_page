@@ -16,10 +16,12 @@ const props = defineProps({
 });
 
 import { useAdminStore } from '../stores/admin';
+import { useDeadlineStore } from '../stores/deadline';
 
 const route = useRoute();
 const cartStore = useCartStore();
 const adminStore = useAdminStore();
+const deadlineStore = useDeadlineStore();
 const categoryId = computed(() => Number(route.params.id));
 
 const quantity = computed(() => 
@@ -81,7 +83,7 @@ const displayVotes = computed(() => {
       </div>
       
       <!-- Vote quantity selector matching the design -->
-      <div class="bg-chocolate/5 rounded-full flex items-center p-2 relative">
+      <div v-if="!deadlineStore.isExpired" class="bg-chocolate/5 rounded-full flex items-center p-2 relative">
         <button 
           @click="decrement" 
           :disabled="quantity === 0"
@@ -107,6 +109,10 @@ const displayVotes = computed(() => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
         </button>
+      </div>
+      
+      <div v-else class="bg-red-50 text-red-500 text-center rounded-full py-3 font-bold text-sm border border-red-100 uppercase tracking-widest">
+        Voting Closed
       </div>
     </div>
   </div>

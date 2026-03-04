@@ -2,10 +2,12 @@
 import { ref, onMounted } from 'vue';
 import { useCartStore } from '../stores/cart';
 import { useAdminStore } from '../stores/admin';
+import { useDeadlineStore } from '../stores/deadline';
 import { useRouter } from 'vue-router';
 
 const cartStore = useCartStore();
 const adminStore = useAdminStore();
+const deadlineStore = useDeadlineStore();
 const router = useRouter();
 
 const fullName = ref('');
@@ -102,6 +104,13 @@ const goBack = () => {
 };
 
 onMounted(() => {
+  // If deadline has passed, redirect back to home
+  if (deadlineStore.isExpired) {
+    alert('Voting has concluded. You cannot make any new payments.');
+    router.push('/');
+    return;
+  }
+  
   // If cart is empty, redirect back to home
   if (cartStore.totalVotes === 0) {
     router.push('/');

@@ -1,8 +1,10 @@
 <script setup>
 import { useCartStore } from '../stores/cart';
+import { useDeadlineStore } from '../stores/deadline';
 import { useRouter } from 'vue-router';
 
 const cartStore = useCartStore();
+const deadlineStore = useDeadlineStore();
 const router = useRouter();
 
 const proceedToPreview = () => {
@@ -12,7 +14,7 @@ const proceedToPreview = () => {
 
 <template>
   <div 
-    v-show="cartStore.totalVotes > 0"
+    v-show="cartStore.totalVotes > 0 && !deadlineStore.isExpired"
     class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#1a1a1a] shadow-2xl rounded-full px-8 py-4 flex items-center justify-between gap-8 md:gap-16 w-[90%] max-w-2xl border border-white/10 backdrop-blur-md transition-all duration-300 transform translate-y-0"
   >
     <div class="flex items-center gap-8">
