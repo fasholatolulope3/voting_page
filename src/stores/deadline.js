@@ -2,8 +2,8 @@ import { defineStore } from 'pinia';
 import { ref, onMounted, onUnmounted } from 'vue';
 
 export const useDeadlineStore = defineStore('deadline', () => {
-  // Hardcoded deadline: 7 days from March 4, 2026 -> March 11, 2026 13:15:29 UTC+1
-  const targetDate = new Date('2026-03-11T13:15:29+01:00');
+  // Hardcoded deadline: 10 days from March 4, 2026 -> March 14, 2026 13:15:29 UTC+1
+  const targetDate = new Date('2026-03-14T13:15:29+01:00');
   
   const isExpired = ref(false);
   const timeLeftString = ref('');
